@@ -1,0 +1,36 @@
+{
+    "manifest_version": 2,
+
+    "name": "List",
+    "description": "Test List",
+    "version": "1.0",
+    "content_security_policy": "script-src 'self' https://apis.google.com; object-src 'self'",
+    "permissions": [
+        "tabs",
+        "https://www.googleapis.com/*",
+        "https://accounts.google.com/o/oauth2/auth"
+    ],
+    "icons": {
+        "19": "icon19.png",
+        "38": "icon38.png"
+    },
+    "browser_action": {
+        "default_icon": {
+            "19": "icon19-off.png",
+            "38": "icon38-off.png"
+        },
+        "default_title": "List"
+    },
+    "background": {
+        "scripts": [
+            "api.js",
+            "oauthscheme.js",
+            "tokenstore.js",
+            "background.js"
+        ]
+    },
+    "offline_enabled": false,
+    "web_accessible_resources": [
+        "chrome_ex_oauth.html"
+    ]
+}
