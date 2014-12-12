@@ -8,7 +8,8 @@
     "permissions": [
         "tabs",
         "https://www.googleapis.com/*",
-        "https://accounts.google.com/o/oauth2/auth"
+        "https://accounts.google.com/o/oauth2/auth",
+        "gcm"
     ],
     "icons": {
         "19": "icon19.png",
