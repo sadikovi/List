@@ -1,4 +1,4 @@
-var OAuthScheme = (function() {
+var ReqManager = (function() {
     return {
         /**
         * Encodes a value according to the RFC3986 specification.
@@ -37,7 +37,7 @@ var OAuthScheme = (function() {
         */
         addURLParam: function(url, key, value) {
             var sep = (url.indexOf('?') >= 0) ? "&" : "?";
-            return url + sep + OAuthScheme.toRfc3986(key) + "=" + OAuthScheme.toRfc3986(value);
+            return url + sep + ReqManager.toRfc3986(key) + "=" + ReqManager.toRfc3986(value);
         },
 
         /**
@@ -62,8 +62,8 @@ var OAuthScheme = (function() {
             for (var i = 0, param; param = params[i]; i++) {
                 var keyval = param.split("=");
                 if (keyval.length == 2) {
-                    var key = OAuthScheme.fromRfc3986(keyval[0]);
-                    var val = OAuthScheme.fromRfc3986(keyval[1]);
+                    var key = ReqManager.fromRfc3986(keyval[0]);
+                    var val = ReqManager.fromRfc3986(keyval[1]);
                     decoded[key] = val;
                 }
             }
@@ -79,7 +79,7 @@ var OAuthScheme = (function() {
             var pairs = [];
             var a = Object.keys(decoded);
             for (var i=0; i<a.length; i++)  {
-                pairs.push(OAuthScheme.toRfc3986(a[i])+"="+OAuthScheme.toRfc3986(decoded[a[i]]));
+                pairs.push(ReqManager.toRfc3986(a[i])+"="+ReqManager.toRfc3986(decoded[a[i]]));
             }
             return pairs.join("&");
         },
@@ -94,21 +94,21 @@ var OAuthScheme = (function() {
             var urlparts = url.split("?");
             if (urlparts.length >= 2) {
                 var querystring = urlparts.slice(1).join("?");
-                return OAuthScheme.formDecode(querystring);
+                return ReqManager.formDecode(querystring);
             }
             return {};
         },
 
         /**
-        * Sends an HTTP request.  Convenience wrapper for XMLHttpRequest calls.
-        * @param {String} method The HTTP method to use.
-        * @param {String} url The URL to send the request to.
-        * @param {Object} headers Optional request headers in key/value format.
-        * @param {String} body Optional body content.
-        * @param {Function} callback Function to call when the XMLHttpRequest's
-        *     ready state changes.  See documentation for XMLHttpRequest's
-        *     onreadystatechange handler for more information.
-        */
+         * Sends an HTTP request.  Convenience wrapper for XMLHttpRequest calls.
+         * @param {String} method The HTTP method to use.
+         * @param {String} url The URL to send the request to.
+         * @param {Object} headers Optional request headers in key/value format.
+         * @param {String} body Optional body content.
+         * @param {Function} callback Function to call when the XMLHttpRequest's
+         *     ready state changes.  See documentation for XMLHttpRequest's
+         *     onreadystatechange handler for more information.
+         */
         sendRequest: function(method, url, headers, body, callback) {
             var xhr = new XMLHttpRequest();
             xhr.onreadystatechange = function(data) {
@@ -123,6 +123,32 @@ var OAuthScheme = (function() {
                 }
             }
             xhr.send(body);
+        },
+
+        /**
+        * Constructs batch request body using array of parts. Each part is a String.
+        * @param {String} parts Array of json objects to use.
+        * @return {String} A body for the batch request.
+        */
+        buildBatchRequestBody: function(parts) {
+            var se = "\n--batch_request_part";
+            var endse = se+"--";
+            var a = [];
+            for (var i=0; i<parts.length; i++) {
+                a.push(se+ReqManager.getBatchRequestPart(parts[i]));
+            }
+            return a.join("")+endse;
+        },
+
+        //TODO: support POST requests
+        /**
+        * Returns string of the @json.
+        * Each json has attributes: {content_type: "#", url: "#", method: "#"}.
+        * @param {Object} part An object to convert into string.
+        * @return {String} A string representation of the Object.
+        */
+        getBatchRequestPart: function(part) {
+            return ("\n"+"Content-Type: "+ part.content_type+"\n\n"+part.method+" "+part.url+"\n");
         }
     }
 })();

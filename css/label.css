@@ -1,0 +1,23 @@
+.label {
+    display: inline-block;
+    vertical-align: baseline;
+    line-height: 1;
+    background-color: #e8e8e8;
+    border-color: #e8e8e8;
+    padding: 4px 8px;
+    margin: 2px 3px;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    border-radius: 3px;
+    box-sizing: border-box;
+}
+
+.label-black { background-color: #1b1c1d!important; }
+.label-yellow { background-color: #f3ca2d!important; }
+.label-green { background-color: #5bbd72!important; }
+.label-blue { background-color: #3b83c0!important; }
+.label-orange { background-color: #e07b53!important; }
+.label-purple { background-color: #564f8a!important; }
+.label-red { background-color: #d95c5c!important; }
+.label-teal { background-color: #00b5ad!important; }

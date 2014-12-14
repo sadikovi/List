@@ -2,32 +2,33 @@
     "manifest_version": 2,
 
     "name": "List",
-    "description": "Test List",
-    "version": "1.0",
+    "description": "Light and convinient tool to manage emails",
+    "version": "1.0.3",
     "content_security_policy": "script-src 'self' https://apis.google.com; object-src 'self'",
     "permissions": [
         "tabs",
         "https://www.googleapis.com/*",
-        "https://accounts.google.com/o/oauth2/auth",
-        "gcm"
+        "https://accounts.google.com/o/oauth2/auth"
     ],
     "icons": {
-        "19": "icon19.png",
-        "38": "icon38.png"
+        "19": "images/icon19.png",
+        "38": "images/icon38.png"
     },
     "browser_action": {
         "default_icon": {
-            "19": "icon19-off.png",
-            "38": "icon38-off.png"
+            "19": "images/icon19-off.png",
+            "38": "images/icon38-off.png"
         },
-        "default_title": "List"
+        "default_title": "List",
+        "default_popup": "list.html"
     },
     "background": {
-        "scripts": [
-            "api.js",
-            "oauthscheme.js",
-            "tokenstore.js",
-            "background.js"
+        "scripts":[
+            "js/api.js",
+            "js/reqmanager.js",
+            "js/tokenstore.js",
+            "js/background.js",
+            "js/start.js"
         ]
     },
     "offline_enabled": false,
