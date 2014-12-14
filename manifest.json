@@ -16,8 +16,8 @@
     },
     "browser_action": {
         "default_icon": {
-            "19": "images/icon19-off.png",
-            "38": "images/icon38-off.png"
+            "19": "images/icon_off19.png",
+            "38": "images/icon_off38.png"
         },
         "default_title": "List",
         "default_popup": "list.html"
@@ -27,12 +27,12 @@
             "js/api.js",
             "js/reqmanager.js",
             "js/tokenstore.js",
-            "js/background.js",
+            "js/oauth.js",
             "js/start.js"
         ]
     },
     "offline_enabled": false,
     "web_accessible_resources": [
-        "chrome_ex_oauth.html"
+        "list.html"
     ]
 }

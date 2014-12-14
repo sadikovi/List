@@ -1,8 +1,14 @@
+/**
+* Gmail API system labels that are used to fetch unread messages (threads)
+*/
 var API_SYS_LABELS = {
     Inbox: "INBOX",
     Unread: "UNREAD"
 };
 
+/**
+* Gmail API labels that are represented as tabs in inbox
+*/
 var API_TABS = {
     Important: "IMPORTANT",
     Personal: "CATEGORY_PERSONAL",
@@ -10,6 +16,9 @@ var API_TABS = {
     Promotions: "CATEGORY_PROMOTIONS"
 };
 
+/**
+* Gmail API urls
+*/
 var API_URLS = {
     batch: "https://www.googleapis.com/batch",
     messages: "https://www.googleapis.com/gmail/v1/users/me/messages",
@@ -19,18 +28,36 @@ var API_URLS = {
 
 var API = (function() {
     return {
-        getInboxUnreadMailThreads: function(access_token, maxResults, callback) {
+        /**
+        * Sends and receives request to fetch unread mail threads.
+        * @param {String} access_token A valid access token for authentication.
+        * @param {int} maxResults A number represents maximum results to be fetched.
+        * @param {Function} success A callback function for a successful response.
+        * @param {Function} error A callback function for a failed response.
+        */
+        getInboxUnreadMailThreads: function(access_token, maxResults, success, error) {
             var url = ReqManager.addURLParam(API_URLS.threads, "access_token", access_token);
             url = ReqManager.addURLParam(url, "maxResults", maxResults);
             url = ReqManager.addURLParam(url, "fields", "resultSizeEstimate,threads/id");
             url = API.searchTabs(url, [API_SYS_LABELS.Inbox, API_SYS_LABELS.Unread]);
             ReqManager.sendRequest("GET", url, {}, "", function(xhr, data) {
                 if (xhr.readyState == 4) {
-                    callback.call(this, xhr, data);
+                    if (xhr.status == 200) {
+                        success.call(this, xhr.responseText);
+                        return false;
+                    }
+                    error.call(this, xhr.responseText);
                 }
             });
         },
 
+        /**
+        * Helper function to append searchable labels to the url.
+        * @param {String} url An URL which may or may not contain querystring values.
+        * @param {String} tabs An array containing labels.
+        * @return {String} The URL with URL-encoded versions of the key and value
+        *     appended, prefixing them with "&" or "?" as needed.
+        */
         searchTabs: function(url, tabs) {
             if (tabs && tabs.length > 0) {
                 for (var i=0; i<tabs.length; i++) {
@@ -40,27 +67,14 @@ var API = (function() {
             return url;
         },
 
-        getLabels: function(access_token, callback) {
-            var url = ReqManager.addURLParam(API_URLS.labels, "access_token", access_token);
-            url = ReqManager.addURLParam(url, "fields", "labels(id,name,type)");
-            ReqManager.sendRequest("GET", url, {}, "", function(xhr, data) {
-                if (xhr.readyState == 4) {
-                    callback.call(this, xhr, data);
-                }
-            });
-        },
-
-        getThread: function(access_token, id, callback) {
-            var url = API_URLS.threads+"/"+id;
-            var url = ReqManager.addURLParam(url, "access_token", access_token);
-            url = ReqManager.addURLParam(url, "fields", "id,messages(id,labelIds,payload,snippet)");
-            ReqManager.sendRequest("GET", url, {}, "", function(xhr, data) {
-                if (xhr.readyState == 4) {
-                    callback.call(this, xhr, data);
-                }
-            });
-        },
-
+        /**
+        * Prepares and sends batch request.
+        * @param {String} url An URL which may or may not contain querystring values.
+        * @param {String} access_token A valid access token for authentication.
+        * @param {Array}  parts An array of objects to be converted into sub-requests.
+        * @param {Function}  success A callback function for successful response.
+        * @param {Function}  error A callback function for failed response.
+        */
         sendBatchRequest: function(url, access_token, parts, success, error) {
             var boundary = "batch_request_part";
             var headers = {
@@ -93,6 +107,11 @@ var API = (function() {
             });
         },
 
+        /**
+        * Helper function to parse sub-requests that are returned in reponse body.
+        * @param {String} body A response body of sub-request
+        * @return {Object} The parsed object containing headers, response status/message and data.
+        */
         parseResponseBody: function(body) {
             var obj = {};
             var prev = 0, index = 0, lastIndex = body.lastIndexOf("\n");
@@ -125,6 +144,11 @@ var API = (function() {
             return obj;
         },
 
+        /**
+        * Helper function to parse key-multivalue pair, separated by ";".
+        * @param {String} url A request/response header.
+        * @return {Object} The object that contains all the header options.
+        */
         parseHeader: function(header) {
             var a = header.split(";");
             var b = {};
