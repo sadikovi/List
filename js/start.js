@@ -1,7 +1,6 @@
 // init global parameters
-window.list_allowRefreshToken = true;
-window.list_allowCheckTimer = true;
 window.list_checkTimer = null;
+window.list_errorTimer = null;
 window.list_checkTimerInterval = 5*60; // in seconds
 window.list_maxResults = 5;
 
@@ -52,30 +51,64 @@ var BrowserAction = (function() {
                 if (error) {
                     error.call(this, errmsg);
                 }
-                console.log("Error: " + errmsg);
             });
         }
     }
 })();
 
+// checks unread messages and refreshes token if necessary
+function checkUnread(access_token) {
+    BrowserAction.checkUnreadThreads(access_token, null, function(response) {
+        OAuth.checkAndRefreshAccessToken(function(access_token) {
+            BrowserAction.checkUnreadThreads(access_token, null, function(response) {
+                OAuth.authorize(success, error);
+            });
+        }, function(response) {
+            OAuth.authorize(success, error);
+        });
+    });
+}
+
+// clears timer
+function clearTimer(timer) {
+    clearInterval(timer);
+    timer = null;
+}
+
+// success function for authorization
+function success(access_token) {
+    BrowserAction.setBrowserAction(true, "", null);
+    BrowserAction.checkUnreadThreads(access_token, null, null);
+    clearTimer(window.list_errorTimer);
+    clearTimer(window.list_checkTimer);
+
+    window.list_checkTimer = setInterval(
+        function() { checkUnread(access_token); },
+        window.list_checkTimerInterval*1000
+    );
+}
+
+// error function for authorization
+function error(errmsg) {
+    BrowserAction.setBrowserAction(false, "", null);
+    console.log("Error: " + errmsg);
+    clearTimer(window.list_checkTimer);
+    if (!window.list_errorTimer) {
+        window.list_errorTimer = setInterval(function() {
+            OAuth.authorize(success, error);
+            console.log("Another try...");
+        }, 5000);
+    }
+}
+
 // set "off" icon and empty badge
 BrowserAction.setBrowserAction(false, "", null);
-// and add event listener
+// ...and add event listener
 document.addEventListener('DOMContentLoaded', function () {
-    OAuth.authorize(
-        function(access_token) {
-            BrowserAction.setBrowserAction(true, "", null);
-            BrowserAction.checkUnreadThreads(access_token, null, null);
-            if (window.list_allowCheckTimer) {
-                window.checkTimer = setInterval(function() {
-                    BrowserAction.checkUnreadThreads(access_token, null, null);
-                }, window.list_checkTimerInterval*1000);
-                window.list_allowCheckTimer = false;
-            }
-        },
-        function(errmsg) {
-            BrowserAction.setBrowserAction(false, "", null);
-            console.log(error);
-        }
-    );
+    OAuth.authorize(success, error);
+});
+
+chrome.browserAction.onClicked.addListener(function() {
+    var access_token = TokenStore.getAccessToken(oauth.client_id, oauth.scope);
+    checkUnread(access_token);
 });

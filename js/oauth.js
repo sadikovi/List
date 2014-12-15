@@ -18,10 +18,7 @@ var OAuth = (function() {
         */
         authorize: function(success, error) {
             if (TokenStore.hasToken(oauth.client_id, oauth.scope)) {
-                OAuth.checkAccessToken(success, function(response) {
-                    var refresh_token = TokenStore.getRefreshToken(oauth.client_id, oauth.scope);
-                    OAuth.getAccessToken(true, oauth.exchange_url, refresh_token, oauth, success, error);
-                });
+                OAuth.checkAndRefreshAccessToken(success, error);
             } else {
                 OAuth.initAuthFlow(success, error);
             }
@@ -42,7 +39,7 @@ var OAuth = (function() {
         * @param {Function} error A callback function for failed authorization.
         */
         initAuthFlow: function(success, error) {
-            var url = ReqManager.addURLParam(params.request_url, "redirect_uri", oauth.redirect_uri);
+            var url = ReqManager.addURLParam(oauth.request_url, "redirect_uri", oauth.redirect_uri);
             url = ReqManager.addURLParam(url, "client_id", oauth.client_id);
             url = ReqManager.addURLParam(url, "scope", oauth.scope);
             url = ReqManager.addURLParam(url, "response_type", oauth.response_type);
@@ -142,6 +139,18 @@ var OAuth = (function() {
                     }
                     error.call(this, xhr.responseText);
                 }
+            });
+        },
+
+        /**
+        * Checks access token and refreshes it if necessary. If it is impossible to refresh error function called.
+        * @param {Function} success A callback function for successful request - no refresh needed/new access token obtained.
+        * @param {Function} error A callback function for failed request/refresh request.
+        */
+        checkAndRefreshAccessToken: function(success, error) {
+            OAuth.checkAccessToken(success, function(response) {
+                var refresh_token = TokenStore.getRefreshToken(oauth.client_id, oauth.scope);
+                OAuth.getAccessToken(true, oauth.exchange_url, refresh_token, oauth, success, error);
             });
         }
     }
