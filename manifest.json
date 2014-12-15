@@ -3,7 +3,7 @@
 
     "name": "List",
     "description": "Light and convinient tool to manage emails",
-    "version": "1.0.4",
+    "version": "1.0.5",
     "content_security_policy": "script-src 'self' https://apis.google.com; object-src 'self'",
     "permissions": [
         "tabs",
@@ -21,7 +21,8 @@
             "19": "images/icon_off19.png",
             "38": "images/icon_off38.png"
         },
-        "default_title": "List"
+        "default_title": "List",
+        "default_popup": "popup.html"
     },
     "background": {
         "scripts":[

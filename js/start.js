@@ -59,11 +59,16 @@ var BrowserAction = (function() {
 // checks unread messages and refreshes token if necessary
 function checkUnread(access_token) {
     BrowserAction.checkUnreadThreads(access_token, null, function(response) {
+        console.log("There was an error and we are checking refresh token");
         OAuth.checkAndRefreshAccessToken(function(access_token) {
+            console.log("Access token is renewed: " + access_token);
+            console.log("Check unread threads with new access token");
             BrowserAction.checkUnreadThreads(access_token, null, function(response) {
+                console.log("Check after obtaining new access token has failed. Called global authorization");
                 OAuth.authorize(success, error);
             });
         }, function(response) {
+            console.log("We could not obtain new access token, therefore we started authorization");
             OAuth.authorize(success, error);
         });
     });
@@ -108,7 +113,9 @@ document.addEventListener('DOMContentLoaded', function () {
     OAuth.authorize(success, error);
 });
 
+/*
 chrome.browserAction.onClicked.addListener(function() {
     var access_token = TokenStore.getAccessToken(oauth.client_id, oauth.scope);
     checkUnread(access_token);
 });
+*/
