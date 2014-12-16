@@ -63,6 +63,7 @@ function checkUnread(access_token) {
         OAuth.checkAndRefreshAccessToken(function(access_token) {
             console.log("Access token is renewed: " + access_token);
             console.log("Check unread threads with new access token");
+            console.log("this is access token stored: " + TokenStore.getAccessToken(oauth.client_id, oauth.scope));
             BrowserAction.checkUnreadThreads(access_token, null, function(response) {
                 console.log("Check after obtaining new access token has failed. Called global authorization");
                 OAuth.authorize(success, error);
@@ -88,7 +89,7 @@ function success(access_token) {
     clearTimer(window.list_checkTimer);
 
     window.list_checkTimer = setInterval(
-        function() { checkUnread(access_token); },
+        function() { checkUnread(TokenStore.getAccessToken(oauth.client_id, oauth.scope)); },
         window.list_checkTimerInterval*1000
     );
 }
