@@ -56,6 +56,12 @@ var TokenStore = (function() {
 
         hasToken: function(client_id, scope) {
             return !!localStorage[encodeURI(client_id)+encodeURI(scope)+"&access_token"];
+        },
+
+        hasBothTokens: function(client_id, scope) {
+            hasAccessToken = !!localStorage[encodeURI(client_id)+encodeURI(scope)+"&access_token"];
+            hasRefreshToken = !!localStorage[encodeURI(client_id)+encodeURI(scope)+"&refresh_token"];
+            return hasAccessToken && hasRefreshToken;
         }
     }
 })();

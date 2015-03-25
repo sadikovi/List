@@ -2,6 +2,7 @@
 window.list_checkTimer = null;
 window.list_errorTimer = null;
 window.list_checkTimerInterval = 5*60; // in seconds
+window.list_checkErrorTryInterval = 10*60 // in seconds
 window.list_maxResults = 5;
 
 var BrowserAction = (function() {
@@ -59,17 +60,11 @@ var BrowserAction = (function() {
 // checks unread messages and refreshes token if necessary
 function checkUnread(access_token) {
     BrowserAction.checkUnreadThreads(access_token, null, function(response) {
-        console.log("There was an error and we are checking refresh token");
         OAuth.checkAndRefreshAccessToken(function(access_token) {
-            console.log("Access token is renewed: " + access_token);
-            console.log("Check unread threads with new access token");
-            console.log("this is access token stored: " + TokenStore.getAccessToken(oauth.client_id, oauth.scope));
             BrowserAction.checkUnreadThreads(access_token, null, function(response) {
-                console.log("Check after obtaining new access token has failed. Called global authorization");
                 OAuth.authorize(success, error);
             });
         }, function(response) {
-            console.log("We could not obtain new access token, therefore we started authorization");
             OAuth.authorize(success, error);
         });
     });
@@ -89,7 +84,9 @@ function success(access_token) {
     clearTimer(window.list_checkTimer);
 
     window.list_checkTimer = setInterval(
-        function() { checkUnread(TokenStore.getAccessToken(oauth.client_id, oauth.scope)); },
+        function() {
+            checkUnread(TokenStore.getAccessToken(oauth.client_id, oauth.scope));
+        },
         window.list_checkTimerInterval*1000
     );
 }
@@ -97,13 +94,13 @@ function success(access_token) {
 // error function for authorization
 function error(errmsg) {
     BrowserAction.setBrowserAction(false, "", null);
-    console.log("Error: " + errmsg);
+    //console.log("Error: " + errmsg);
     clearTimer(window.list_checkTimer);
     if (!window.list_errorTimer) {
         window.list_errorTimer = setInterval(function() {
             OAuth.authorize(success, error);
-            console.log("Another try...");
-        }, 5000);
+            console.log("Error: " + errmsg+ "; Another try...");
+        }, window.list_checkErrorTryInterval);
     }
 }
 
@@ -113,10 +110,3 @@ BrowserAction.setBrowserAction(false, "", null);
 document.addEventListener('DOMContentLoaded', function () {
     OAuth.authorize(success, error);
 });
-
-/*
-chrome.browserAction.onClicked.addListener(function() {
-    var access_token = TokenStore.getAccessToken(oauth.client_id, oauth.scope);
-    checkUnread(access_token);
-});
-*/

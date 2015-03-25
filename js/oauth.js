@@ -106,7 +106,6 @@ var OAuth = (function() {
             if (xhr.readyState == 4) {
                 if (xhr.status == 200) {
                     var res = JSON.parse(xhr.responseText);
-                    console.log(res);
                     TokenStore.setAccessToken(res.access_token, oauth.client_id, oauth.scope);
                     if (res.refresh_token) {
                         TokenStore.setRefreshToken(res.refresh_token, oauth.client_id, oauth.scope);
