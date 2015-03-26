@@ -3,7 +3,7 @@ window.list_checkTimer = null;
 window.list_errorTimer = null;
 window.list_checkTimerInterval = 5*60; // in seconds
 window.list_checkErrorTryInterval = 10*60 // in seconds
-window.list_maxResults = 5;
+window.list_maxResults = 9;
 
 var BrowserAction = (function() {
     return {
@@ -32,11 +32,12 @@ var BrowserAction = (function() {
                 BrowserAction.setBrowserAction(true, "...", "#777");
             }, function(result) {
                 var list = JSON.parse(result);
-                if (list["threads"] && list["resultSizeEstimate"]) {
-                    var estimatedResults = list["resultSizeEstimate"];
+                if (list["threads"]) {
                     var listBadge = list["threads"].length;
                     if (listBadge > 0) {
-                        BrowserAction.setBrowserAction(true, ""+listBadge+((listBadge >= estimatedResults)?"":"+"), "#333");
+                        var symb = listBadge.toString();
+                        symb = (listBadge < window.list_maxResults)?symb:symb+"+";
+                        BrowserAction.setBrowserAction(true, symb, "#333");
                         if (success) {
                             success.call(this, list["threads"]);
                         }
@@ -94,12 +95,18 @@ function success(access_token) {
 // error function for authorization
 function error(errmsg) {
     BrowserAction.setBrowserAction(false, "", null);
-    //console.log("Error: " + errmsg);
     clearTimer(window.list_checkTimer);
+    if (errmsg != null && errmsg["error"] != null) {
+        // if access denied, do not try again
+        if (errmsg["error"] == "access_denied") {
+            return false;
+        }
+    }
+    // otherwise try to reconnect
     if (!window.list_errorTimer) {
         window.list_errorTimer = setInterval(function() {
+            console.log("Error occuried. Another try...");
             OAuth.authorize(success, error);
-            console.log("Error: " + errmsg+ "; Another try...");
         }, window.list_checkErrorTryInterval);
     }
 }

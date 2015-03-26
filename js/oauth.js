@@ -128,18 +128,22 @@ var OAuth = (function() {
             var access_token = TokenStore.getAccessToken(oauth.client_id, oauth.scope);
             var refresh_token = TokenStore.getRefreshToken(oauth.client_id, oauth.scope);
             var url = ReqManager.addURLParam(oauth.check_url, "access_token", access_token);
-            ReqManager.sendRequest("GET", url, {}, "", function(xhr, data) {
-                if (xhr.readyState == 4) {
-                    if (xhr.status == 200) {
-                        var res = JSON.parse(xhr.responseText);
-                        if (res.expires_in > 0) {
-                            success.call(this, access_token);
-                            return;
+            try {
+                ReqManager.sendRequest("GET", url, {}, "", function(xhr, data) {
+                    if (xhr.readyState == 4) {
+                        if (xhr.status == 200) {
+                            var res = JSON.parse(xhr.responseText);
+                            if (res.expires_in > 0) {
+                                success.call(this, access_token);
+                                return;
+                            }
                         }
+                        error.call(this, xhr.responseText);
                     }
-                    error.call(this, xhr.responseText);
-                }
-            });
+                });
+            } catch (exception) {
+                error.call(this, {"error": "Unexpected error. Check internet connection"});
+            }
         },
 
         /**

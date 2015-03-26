@@ -1,9 +1,8 @@
 {
     "manifest_version": 2,
-
     "name": "List",
     "description": "Light and convinient tool to manage emails",
-    "version": "1.0.5",
+    "version": "1.0.7",
     "content_security_policy": "script-src 'self' https://apis.google.com; object-src 'self'",
     "permissions": [
         "tabs",
